@@ -20,61 +20,59 @@
       </div>
       <input type="submit" value="Ver Resultados" class="button grow" />
     </form>
-    <display-result v-if="lexico != '' || lexico == false" />
+    <loading v-if="loading" />
+    <display-result
+      :lexico="lexico"
+      :sintatico="sintatico"
+      :tautologico="tautologico"
+      v-if="display"
+    />
   </div>
 </template>
 
 <script>
 import displayResult from "./displayResult.vue";
+import AnalisarLexicalmente from "../utils/AnalisarLexicalmente";
+import AnalisarSintaticamente from "../utils/AnalisarSintaticamente";
+import Loading from "./loading.vue";
 export default {
-  components: { displayResult },
+  components: { displayResult, Loading },
   data: function () {
     return {
       formula: "",
-      lexico: "",
-      sintatico: "",
-      tautologico: "",
+      lexico: false,
+      sintatico: false,
+      tautologico: false,
+      display: false,
+      loading: false,
     };
   },
   methods: {
     submitFormula(e) {
       e.preventDefault();
+      console.log("Começando a analisar a formula: " + this.formula);
+      this.display = false;
+      this.loading = true;
+      setTimeout(() => {
+        this.loading = false;
+        this.display = true;
+      }, 1500);
 
-      this.lexico = "";
-      this.sintatico = "";
-      this.tautologico = "";
+      this.lexico = AnalisarLexicalmente(this.formula);
 
-      this.lexico = this.analiseLexica();
-      console.log(this.lexico);
+      if (!this.lexico) {
+        //se não é lexico tambem não é sintatico nem tautologico
+        this.sintatico = false;
+        this.tautologico = false;
+      } else {
+        this.sintatico = AnalisarSintaticamente(this.formula);
+      }
+    },
+    analiseSintaticamente() {
+      return true;
     },
     addToFormula(valor) {
       this.formula += valor;
-    },
-    analiseLexica() {
-      if (this.formula == "") {
-        console.log("Formula está vazia");
-        return false;
-      }
-      let acceptedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ∼∧v→↔()";
-      let isValid = true;
-      let invalidChar = "";
-      for (let a of this.formula.replaceAll(" ", "").trim()) {
-        let cur = false;
-        for (let b of acceptedChars) {
-          if (a == b) cur = true;
-        }
-        if (!cur) {
-          isValid = false;
-          invalidChar = a;
-          break;
-        }
-      }
-      if (isValid) {
-        console.log("É Lexicalmente valido");
-      } else {
-        console.log("É invalido Lexicalmentte devido à (" + invalidChar + ")");
-      }
-      return isValid;
     },
   },
 };
@@ -83,7 +81,8 @@ export default {
 <style scoped lang="scss">
 @import url("https://fonts.googleapis.com/css2?family=Koulen&display=swap");
 #inputFormula {
-  min-height: 500px;
+  margin: 150px 0;
+  height: fit-content;
   display: flex;
   flex-direction: column;
   justify-content: center;
