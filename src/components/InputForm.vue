@@ -12,11 +12,21 @@
         class="texto"
       />
       <div class="btns">
-        <button @click="addToFormula('∼')" class="addChar">∼</button>
-        <button @click="addToFormula('∧')" class="addChar">∧</button>
-        <button @click="addToFormula('v')" class="addChar">v</button>
-        <button @click="addToFormula('→')" class="addChar">→</button>
-        <button @click="addToFormula('↔')" class="addChar">↔</button>
+        <button type="button" @click="addToFormula('∼')" class="addChar grow">
+          ∼
+        </button>
+        <button type="button" @click="addToFormula('∧')" class="addChar grow">
+          ∧
+        </button>
+        <button type="button" @click="addToFormula('v')" class="addChar grow">
+          v
+        </button>
+        <button type="button" @click="addToFormula('→')" class="addChar grow">
+          →
+        </button>
+        <button type="button" @click="addToFormula('↔')" class="addChar grow">
+          ↔
+        </button>
       </div>
       <input type="submit" value="Ver Resultados" class="button grow" />
     </form>
