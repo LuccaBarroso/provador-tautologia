@@ -37,6 +37,10 @@
       :tautologico="tautologico"
       v-if="display"
     />
+
+    <p class="errorDisplay" v-if="errMsg != '' && display">
+      {{ errMsg }}
+    </p>
   </div>
 </template>
 
@@ -55,12 +59,14 @@ export default {
       tautologico: false,
       display: false,
       loading: false,
+      errMsg: "",
     };
   },
   methods: {
     submitFormula(e) {
       e.preventDefault();
       console.log("Começando a analisar a formula: " + this.formula);
+      this.errMsg = "";
       this.display = false;
       this.loading = true;
       setTimeout(() => {
@@ -68,14 +74,21 @@ export default {
         this.display = true;
       }, 1500);
 
-      this.lexico = AnalisarLexicalmente(this.formula);
+      let resultLexico = AnalisarLexicalmente(this.formula);
+      this.lexico = resultLexico.valid;
 
       if (!this.lexico) {
         //se não é lexico tambem não é sintatico nem tautologico
+        this.errMsg = resultLexico.msg;
         this.sintatico = false;
         this.tautologico = false;
       } else {
-        this.sintatico = AnalisarSintaticamente(this.formula);
+        let resultSintatico = AnalisarSintaticamente(this.formula);
+        this.sintatico = resultSintatico.valid;
+        if (!this.sintatico) {
+          console.log(resultSintatico.msg);
+          this.errMsg = resultSintatico.msg;
+        }
       }
     },
     analiseSintaticamente() {
@@ -142,6 +155,18 @@ export default {
     margin-bottom: 20px;
     span {
       font-family: "Koulen", cursive;
+    }
+  }
+}
+.errorDisplay {
+  .btn {
+    overflow-y: hidden !important;
+    background: none;
+    border: none;
+    padding: 20px;
+    icon {
+      overflow-y: hidden !important;
+      font-size: 70px;
     }
   }
 }

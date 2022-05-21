@@ -2,8 +2,7 @@ export default function (formula) {
   // no function name
   //se tiver vazio ele já retorna falso
   if (formula == "") {
-    console.log("Formula está vazia");
-    return false;
+    return { valid: false, msg: "Formula está vazia" };
   }
   //checa se os caracteres são validos
   let acceptedChars = "ABCDEGHIJKLMNOPQRSTUWXYZ∼∧v→↔()";
@@ -23,8 +22,11 @@ export default function (formula) {
 
   if (isValid) {
     console.log("É Lexicalmente valido");
+    return { valid: isValid };
   } else {
-    console.log("É invalido Lexicalmentte devido à (" + invalidChar + ")");
+    return {
+      valid: isValid,
+      msg: "É invalido Lexicalmente devido à (" + invalidChar + ")!",
+    };
   }
-  return isValid;
 }

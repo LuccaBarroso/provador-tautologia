@@ -15,10 +15,10 @@ export default function (formula) {
       if (parentesisCount > 0) {
         parentesisCount--;
       } else {
-        console.log(
-          "Tem um parenteses fechando a mais! não é valido sinteticamente"
-        );
-        return false;
+        return {
+          valid: false,
+          msg: "Tem um parenteses fechando a mais! não é valido sinteticamente!",
+        };
       }
     }
     if (validSoloLiterals.includes(a)) {
@@ -38,8 +38,10 @@ export default function (formula) {
     let atual = eLiteral(partes[i]);
 
     if (atual && anterior) {
-      console.log("Sintaticamente invalido porque tem 2 literais juntos");
-      return false;
+      return {
+        valid: false,
+        msg: "Sintaticamente invalido porque tem 2 literais juntos!",
+      };
     }
 
     anterior = atual;
@@ -57,10 +59,13 @@ export default function (formula) {
         i + 1 == partes.length ||
         !eLiteralOuParenteses(partes[i + 1], false)
       ) {
-        console.log(
-          "Tem algum " + partes[i] + " que não tem literais em ambos os lados"
-        );
-        return false;
+        return {
+          valid: false,
+          msg:
+            "Sinteticamente invalido tem algum " +
+            partes[i] +
+            " que não tem literais em ambos os lados!",
+        };
       }
     }
 
@@ -68,12 +73,13 @@ export default function (formula) {
   }
 
   if (parentesisCount > 0) {
-    console.log(
-      "Tem um parenteses abrindo a mais! não é valido sinteticamente"
-    );
-    return false;
+    return {
+      valid: false,
+      msg: "Tem um parenteses abrindo a mais! não é valido sinteticamente!",
+    };
   }
-  return true;
+  console.log("É Sinteticamente valido");
+  return { valid: true };
 }
 
 function eLiteral(a) {
