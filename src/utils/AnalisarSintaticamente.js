@@ -22,7 +22,15 @@ export default function (formula) {
       }
     }
     if (validSoloLiterals.includes(a)) {
-      partes.push(a);
+      if (a == "(") {
+        if (i != 0 && formulaLimpa.charAt(i - 1) == "∼") {
+          partes.push(formulaLimpa.charAt(i - 1) + a);
+        } else {
+          partes.push(a);
+        }
+      } else {
+        partes.push(a);
+      }
     } else if (validLetters.includes(a)) {
       if (i != 0 && formulaLimpa.charAt(i - 1) == "∼") {
         partes.push(formulaLimpa.charAt(i - 1) + a);

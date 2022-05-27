@@ -48,6 +48,7 @@
 import displayResult from "./displayResult.vue";
 import AnalisarLexicalmente from "../utils/AnalisarLexicalmente";
 import AnalisarSintaticamente from "../utils/AnalisarSintaticamente";
+import AnalisarTautologicamente from "../utils/AnalisarTautologicamente";
 import Loading from "./loading.vue";
 export default {
   components: { displayResult, Loading },
@@ -88,6 +89,9 @@ export default {
         if (!this.sintatico) {
           console.log(resultSintatico.msg);
           this.errMsg = resultSintatico.msg;
+        } else {
+          let resultTautologico = AnalisarTautologicamente(this.formula);
+          this.tautologico = resultTautologico;
         }
       }
     },
