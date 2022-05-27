@@ -53,7 +53,13 @@ class BinarySearchTree {
       //pegue o proximo que não foi simplificado e simplifique ele
       let cur = this.proxNaoSimplificado();
 
-      // for (let i = 0; i < cur.length; i++) {}
+      for (let i = 0; i < cur.length; i++) {
+        //se a equação atual for envolta de parentesis
+        //
+        //se a equação tiver parentesis mas não completamente em volta
+        //pegar o elemento da esquerda e o da direita e partir em dois
+      }
+
       cur.left = "A";
       cur.right = "B";
 
