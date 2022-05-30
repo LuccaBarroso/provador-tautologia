@@ -37,6 +37,21 @@ export default function (formula) {
       } else {
         partes.push(a);
       }
+    } else if (
+      i - 1 >= 0 &&
+      validLetters.includes(formulaLimpa.charAt(i - 1))
+    ) {
+      partes.push(a);
+    }
+  }
+
+  //checar ∼ depois de letra
+  for (let i = 0; i < partes.length; i++) {
+    if (eLiteral(partes[i]) && partes[i + 1] == "∼") {
+      return {
+        valid: false,
+        msg: "Sintaticamente invalido porque tem algum ∼ no lugar errado!",
+      };
     }
   }
 
@@ -55,9 +70,16 @@ export default function (formula) {
     anterior = atual;
   }
 
+  //checar parentesis vazios
+  if (formulaLimpa.includes("()")) {
+    return {
+      valid: false,
+      msg: "Sintaticamente invalido porque tem parentesis vazios!",
+    };
+  }
+
   //checar se tem equaçoes incompletas
   anterior = false;
-  console.log(partes);
   for (let i = 0; i < partes.length; i++) {
     //se a atual for um desses = "∧v→↔"
     if (validIfSequenced.includes(partes[i])) {
@@ -91,7 +113,8 @@ export default function (formula) {
 }
 
 function eLiteral(a) {
-  let validos = "∼A∼B∼C∼D∼E∼G∼H∼I∼J∼K∼L∼M∼N∼O∼P∼Q∼R∼S∼T∼U∼W∼X∼Y∼Z";
+  let validos =
+    "∼A ∼B ∼C ∼D ∼E ∼G ∼H ∼I ∼J ∼K ∼L ∼M ∼N ∼O ∼P ∼Q ∼R ∼S ∼T ∼U ∼W ∼X ∼Y ∼Z";
   if (validos.includes(a)) {
     return true;
   }
@@ -99,8 +122,10 @@ function eLiteral(a) {
 }
 
 function eLiteralOuParenteses(a, comeco) {
-  let validos = "∼A∼B∼C∼D∼E∼G∼H∼I∼J∼K∼L∼M∼N∼O∼P∼Q∼R∼S∼T∼U∼W∼X∼Y∼Z";
-  validos += comeco ? ")" : "(";
+  if (comeco && a == "∼") return false;
+  let validos =
+    "∼A ∼B ∼C ∼D ∼E ∼G ∼H ∼I ∼J ∼K ∼L ∼M ∼N ∼O ∼P ∼Q ∼R ∼S ∼T ∼U ∼W ∼X ∼Y ∼Z";
+  validos += comeco ? ")" : "∼(";
   if (validos.includes(a)) {
     return true;
   }

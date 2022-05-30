@@ -87,11 +87,15 @@ export default {
         let resultSintatico = AnalisarSintaticamente(this.formula);
         this.sintatico = resultSintatico.valid;
         if (!this.sintatico) {
+          this.tautologico = false;
           console.log(resultSintatico.msg);
           this.errMsg = resultSintatico.msg;
         } else {
           let resultTautologico = AnalisarTautologicamente(this.formula);
-          this.tautologico = resultTautologico;
+          this.tautologico = resultTautologico.valid;
+          if (!this.tautologico) {
+            this.errMsg = resultTautologico.msg;
+          }
         }
       }
     },
