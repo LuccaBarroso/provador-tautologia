@@ -29,12 +29,11 @@ export default function (formula) {
 
   let arvore = new BinarySearchTree(partes);
   let resultado = arvore.Tableaux();
-
-  if (resultado.valid) {
-    console.log("É Tautologicamente valido");
+  if (!resultado.valid) {
+    return resultado;
   }
 
-  return resultado;
+  return arvore.checarSeValida();
 }
 
 class Node {
@@ -70,13 +69,13 @@ class BinarySearchTree {
       }
       // (P∧(∼Qv∼P))vC erro C
       // (P∧(∼Qv∼P))v(C∧(A→C)) erro C e C
-      console.log("CASOS SENDO TESTADOS: " + proximo.data.join(""));
       let maybeRight = [];
       let maybeLeft = [];
 
+      console.log("INICIANDO OPERAÇÃO - " + proximo.data.join(""));
       for (let t = 0; t < testes.length; t++) {
         let cur = testes[t];
-        if (!eLiteral(cur)) {
+        if (!eLiteral(cur.join(""))) {
           //see tiver -- já subistitui logo
           for (let i = 0; i < cur.length; i++) {
             if (cur[i] == "∼" && cur[i + 1] == "∼") cur.splice(i, 2);
@@ -252,6 +251,54 @@ class BinarySearchTree {
     };
   }
 
+  checarSeValida() {
+    let pilha = [];
+    pilha.push(this.root);
+    while (pilha.length >= 1) {
+      let cur = pilha.pop();
+      if (cur.right === null && cur.left === null) {
+        //aqui tem filhos nulos então tem que ser um literal
+        if (eString(cur.data)) {
+          let valores = cur.data.join("").split(",");
+          let negativos = [];
+          let positivos = [];
+          valores.forEach((val) => {
+            if (val.length === 1) {
+              positivos.push(val);
+            } else {
+              negativos.push(val.split("")[1]);
+            }
+          });
+          let motivo = "";
+          positivos.forEach((positivo) => {
+            negativos.forEach((negativo) => {
+              if (positivo === negativo) {
+                motivo = positivo;
+              }
+            });
+          });
+          if (motivo != "") {
+            return {
+              valid: false,
+              msg: `Não é valido pois ao final do Tableaux, foram encontradas 2 folhas que se contradizem no valor ${motivo}`,
+            };
+          }
+        }
+      }
+
+      if (cur.left) {
+        pilha.push(cur.left);
+      }
+      if (cur.right) {
+        pilha.push(cur.right);
+      }
+    }
+    console.log("É Tautologicamente valido");
+    return {
+      valid: true,
+    };
+  }
+
   folhasSimplificadas() {
     //OBJETIVO:
     //Retornar falso se encontrar algum valor que não é um literal e que seus filhos são nulos
@@ -355,5 +402,4 @@ function eLiteral(a) {
   if (validos.includes(a)) {
     return true;
   }
-  return false;
 }
