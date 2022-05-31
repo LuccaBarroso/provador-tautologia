@@ -55,124 +55,196 @@ class BinarySearchTree {
     while (!this.folhasSimplificadas()) {
       //pegue o proximo que não foi simplificado e simplifique ele
       let proximo = this.proxNaoSimplificado();
-      let cur = proximo.data;
-
-      //see tiver -- já subistitui logo
-      for (let i = 0; i < cur.length; i++) {
-        if (cur[i] == "∼" && cur[i + 1] == "∼") cur.splice(i, 2);
+      let left = [];
+      let right = [];
+      let testes = [];
+      //checar se tem virgula, se tiver fazer pra um e depois pro outro TODO
+      if (proximo.data.join("").includes(",")) {
+        //separar pelas virgulas
+        let temp = proximo.data.join("").split(",");
+        for (let x = 0; x < temp.length; x++) {
+          testes.push(temp[x].split(""));
+        }
+      } else {
+        testes.push(proximo.data);
       }
-      //identificar os elementos principais da operação
-      //dividir eles em 2 lados, alem de descobrir qual a operação
-      let TudoNegativo = false;
-      let finalChecagem = cur.length;
-      let elementos = [];
-      let operacao = "";
-      for (let i = 0; i < finalChecagem; i++) {
-        //∼
-        if (cur[i] == "∼") {
-          //∼L
-          if (eLetraValida(cur[i + 1])) {
-            elementos.push([cur[i], cur[i + 1]]);
-            i++;
-            //∼(...);
-          } else if (
-            cur[i + 1] == "(" &&
-            parentesisAteFinal(cur, i + 2) &&
-            elementos.length <= 0
-          ) {
-            i++;
-            finalChecagem--;
-            TudoNegativo = true;
-            //...∼(...)...;
-          } else {
-            let elemento = pegarElemento(cur, i);
-            elementos.push(elemento);
-            i += elemento.length - 1;
+      // (P∧(∼Qv∼P))vC erro C
+      // (P∧(∼Qv∼P))v(C∧(A→C)) erro C e C
+      console.log("CASOS SENDO TESTADOS: " + proximo.data.join(""));
+      let maybeRight = [];
+      let maybeLeft = [];
+
+      for (let t = 0; t < testes.length; t++) {
+        let cur = testes[t];
+        if (!eLiteral(cur)) {
+          //see tiver -- já subistitui logo
+          for (let i = 0; i < cur.length; i++) {
+            if (cur[i] == "∼" && cur[i + 1] == "∼") cur.splice(i, 2);
           }
-          //(
-        } else if (cur[i] == "(") {
-          //(...)
-          if (parentesisAteFinal(cur, i + 1) && elementos.length <= 0) {
-            //remove os 2
-            finalChecagem--;
-          } else {
-            let elemento = pegarElemento(cur, i);
-            elementos.push(elemento);
-            i += elemento.length - 1;
+          //identificar os elementos principais da operação
+          //dividir eles em 2 lados, alem de descobrir qual a operação
+          let TudoNegativo = false;
+          let finalChecagem = cur.length;
+          let elementos = [];
+          let operacao = "";
+          for (let i = 0; i < finalChecagem; i++) {
+            //∼
+            if (cur[i] == "∼") {
+              //∼L
+              if (eLetraValida(cur[i + 1])) {
+                elementos.push([cur[i], cur[i + 1]]);
+                i++;
+                //∼(...);
+              } else if (
+                cur[i + 1] == "(" &&
+                parentesisAteFinal(cur, i + 2) &&
+                elementos.length <= 0
+              ) {
+                i++;
+                finalChecagem--;
+                TudoNegativo = true;
+                //...∼(...)...;
+              } else {
+                let elemento = pegarElemento(cur, i);
+                elementos.push(elemento);
+                i += elemento.length - 1;
+              }
+              //(
+            } else if (cur[i] == "(") {
+              //(...)
+              if (parentesisAteFinal(cur, i + 1) && elementos.length <= 0) {
+                //remove os 2
+                finalChecagem--;
+              } else {
+                let elemento = pegarElemento(cur, i);
+                elementos.push(elemento);
+                i += elemento.length - 1;
+              }
+              //L
+            } else if (eLetraValida(cur[i])) {
+              elementos.push([cur[i]]);
+            } else {
+              if (operacao != "")
+                return {
+                  valid: false,
+                  msg: "Tem duas operações no mesmo escopo! tente colocar mais parentesis!",
+                };
+              operacao = cur[i];
+            }
           }
-          //L
-        } else if (eLetraValida(cur[i])) {
-          elementos.push([cur[i]]);
+          // console.log(
+          //   "Concluiu a separação de " +
+          //     cur.join("") +
+          //     " que virou (" +
+          //     elementos[0].join("") +
+          //     ") e (" +
+          //     elementos[1].join("") +
+          //     ") do tipo de operação " +
+          //     operacao +
+          //     (TudoNegativo ? " e negativo" : "")
+          // );
+
+          //Regras tipo A:
+          //A∧B => A,B
+          if (operacao == "∧" && !TudoNegativo) {
+            if (left.length > 0) left.push(",");
+            left = left.concat([...elementos[0], ",", ...elementos[1]]);
+          }
+          //∼(AvB) => ∼A,∼B
+          if (operacao == "v" && TudoNegativo) {
+            if (left.length > 0) left.push(",");
+            left = left.concat([
+              "∼",
+              ...elementos[0],
+              ",",
+              "∼",
+              ...elementos[1],
+            ]);
+          }
+          //∼(A→B) => A,∼B
+          if (operacao == "→" && TudoNegativo) {
+            if (left.length > 0) left.push(",");
+            left = left.concat([...elementos[0], ",", "∼", ...elementos[1]]);
+          }
+          ///Regras tipo B:
+          //"∧v→↔()"
+          //AvB => A && B
+          if (operacao == "v" && !TudoNegativo) {
+            if (left.length > 0) left.push(",");
+            if (right.length > 0) right.push(",");
+            left = left.concat(elementos[0]);
+            right = right.concat(elementos[1]);
+          }
+          //A→B => ∼A && B
+          if (operacao == "→" && !TudoNegativo) {
+            if (left.length > 0) left.push(",");
+            if (right.length > 0) right.push(",");
+            left = left.concat(["∼", ...elementos[0]]);
+            right = right.concat(elementos[1]);
+          }
+          //∼(A∧B) => ∼A && ∼B
+          if (operacao == "∧" && TudoNegativo) {
+            if (left.length > 0) left.push(",");
+            if (right.length > 0) right.push(",");
+            left = left.concat(["∼", ...elementos[0]]);
+            right = right.concat(["∼", ...elementos[1]]);
+          }
+          //∼(A↔B) => ∼A∧B && A∧∼B
+          if (operacao == "↔" && TudoNegativo) {
+            if (left.length > 0) left.push(",");
+            if (right.length > 0) right.push(",");
+            left = left.concat(["∼", ...elementos[0], "∧", ...elementos[1]]);
+            right = right.concat([...elementos[0], "∧", "∼", ...elementos[1]]);
+          }
+          //A↔B => A∧B && ∼A∧∼B
+          if (operacao == "↔" && !TudoNegativo) {
+            if (left.length > 0) left.push(",");
+            if (right.length > 0) right.push(",");
+            left = left.concat([...elementos[0], "∧", ...elementos[1]]);
+            right = right.concat([
+              "∼",
+              ...elementos[0],
+              "∧",
+              "∼",
+              ...elementos[1],
+            ]);
+          }
         } else {
-          if (operacao != "")
-            return {
-              valid: false,
-              msg: "Tem duas operações no mesmo escopo! tente colocar mais parentesis!",
-            };
-          operacao = cur[i];
+          if (left.length > 0) {
+            left.push(",");
+            left = left.concat(cur);
+          } else {
+            if (maybeLeft.length > 0) maybeLeft.push(",");
+            maybeLeft = maybeLeft.concat(cur);
+          }
+          if (right.length > 0) {
+            right.push(",");
+            right = right.concat(cur);
+          } else {
+            if (maybeRight.length > 0) maybeRight.push(",");
+            maybeRight = maybeRight.concat(cur);
+          }
         }
       }
-      console.log(
-        "Concluiu a separação de " +
-          cur.join("") +
-          " que virou (" +
-          elementos[0].join("") +
-          ") e (" +
-          elementos[1].join("") +
-          ") do tipo de operação " +
-          operacao +
-          (TudoNegativo ? " e negativo" : "")
-      );
-
-      //Regras tipo A:
-      //A∧B => A,B
-      if (operacao == "∧" && !TudoNegativo) {
-        let novoNode = [...elementos[0], ",", ...elementos[1]];
-        proximo.left = new Node(novoNode);
+      if (right.length > 0 && maybeRight.length > 0) {
+        right.push(",");
+        right = right.concat(maybeRight);
       }
-      //∼(AvB) => ∼A,∼B
-      if (operacao == "v" && TudoNegativo) {
-        let novoNode = ["∼", ...elementos[0], ",", "∼", ...elementos[1]];
-        proximo.left = new Node(novoNode);
+      if (left.length > 0 && maybeLeft.length > 0) {
+        left.push(",");
+        left = left.concat(maybeLeft);
       }
-      //∼(A→B) => A,∼B
-      if (operacao == "→" && TudoNegativo) {
-        let novoNode = [...elementos[0], ",", "∼", ...elementos[1]];
-        proximo.left = new Node(novoNode);
+      if (left.length > 0) {
+        console.log(
+          "OPERAÇÃO TERMINADA - ESQUERDO: " +
+            left.join("") +
+            " - DIREITO: " +
+            right.join("") +
+            " -"
+        );
       }
-      ///Regras tipo B:
-      //"∧v→↔()"
-      //AvB => A && B
-      if (operacao == "v" && !TudoNegativo) {
-        proximo.left = new Node(elementos[0]);
-        proximo.right = new Node(elementos[1]);
-      }
-      //A→B => ∼A && B
-      if (operacao == "→" && !TudoNegativo) {
-        proximo.left = new Node(["∼", ...elementos[0]]);
-        proximo.right = new Node(elementos[1]);
-      }
-      //∼(A∧B) => ∼A && ∼B
-      if (operacao == "∧" && TudoNegativo) {
-        proximo.left = new Node(["∼", ...elementos[0]]);
-        proximo.right = new Node(["∼", ...elementos[1]]);
-      }
-      //∼(A↔B) => ∼A∧B && A∧∼B
-      if (operacao == "↔" && TudoNegativo) {
-        proximo.left = new Node(["∼", ...elementos[0], "∧", ...elementos[1]]);
-        proximo.right = new Node([...elementos[0], "∧", "∼", ...elementos[1]]);
-      }
-      //A↔B => A∧B && ∼A∧∼B
-      if (operacao == "↔" && !TudoNegativo) {
-        proximo.left = new Node([...elementos[0], "∧", ...elementos[1]]);
-        proximo.right = new Node([
-          "∼",
-          ...elementos[0],
-          "∧",
-          "∼",
-          ...elementos[1],
-        ]);
-      }
+      if (left.length > 0) proximo.left = new Node(left);
+      if (right.length > 0) proximo.right = new Node(right);
     }
     //tudo esta simplificado, o tableaux esta completo
     return {
@@ -191,9 +263,6 @@ class BinarySearchTree {
       if (cur.right === null && cur.left === null) {
         //aqui tem filhos nulos então tem que ser um literal
         if (!eString(cur.data)) {
-          console.log(
-            "encontrou uma formula não simplificada: " + cur.data.join("")
-          );
           return false;
         }
       }
@@ -216,7 +285,7 @@ class BinarySearchTree {
     while (pilha.length >= 1) {
       let cur = pilha.pop();
 
-      if (cur.right === null && cur.left === null) {
+      if (cur.right === null && cur.left === null && !eString(cur.data)) {
         return cur;
       }
 
@@ -233,6 +302,7 @@ class BinarySearchTree {
 function eString(a) {
   // let validos = "∼A∼B∼C∼D∼E∼G∼H∼I∼J∼K∼L∼M∼N∼O∼P∼Q∼R∼S∼T∼U∼W∼X∼Y∼Z";
   //A,A∧B
+  if (eLiteral(a)) return true;
   let str = a.join("").split(",");
   for (let i = 0; i < str.length; i++) {
     if (!eLiteral(str[i])) {
