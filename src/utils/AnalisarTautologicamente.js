@@ -63,7 +63,6 @@ class BinarySearchTree {
         let temp = proximo.data.join("").split(",");
         for (let x = 0; x < temp.length; x++) {
           let curCase = temp[x].split("");
-          console.log(curCase);
           if (eLiteral(curCase.join(""))) {
             testes = [curCase].concat(testes);
           } else {
@@ -83,7 +82,6 @@ class BinarySearchTree {
       for (let t = 0; t < testes.length; t++) {
         let cur = testes[t];
         if (!eLiteral(cur.join(""))) {
-          console.log(hasFinished);
           if (hasFinished) {
             if (maybeLeft.length > 0) maybeLeft.push(",");
             maybeLeft = maybeLeft.concat(cur);
@@ -91,7 +89,6 @@ class BinarySearchTree {
             maybeRight = maybeRight.concat(cur);
             continue;
           }
-          console.log(hasFinished);
           hasFinished = true;
           //see tiver -- já subistitui logo
           for (let i = 0; i < cur.length; i++) {
@@ -221,22 +218,53 @@ class BinarySearchTree {
               //Só tenho que ter o B
               if (left.length > 0) left.push(",");
               left = left.concat(elementos[1]);
-              console.log(left);
             }
           }
           //∼(A∧B) => ∼A && ∼B
           if (operacao == "∧" && TudoNegativo) {
-            if (left.length > 0) left.push(",");
-            if (right.length > 0) right.push(",");
-            left = left.concat(["∼", ...elementos[0]]);
-            right = right.concat(["∼", ...elementos[1]]);
+            if (maybeLeft.length > 0 && left.length <= 0) {
+              left = maybeLeft;
+              maybeLeft = [];
+            }
+
+            //se tem A coloca não B
+            if (arrIncluiArr(left, elementos[0])) {
+              if (left.length > 0) left.push(",");
+              left = left.concat(["∼", ...elementos[1]]);
+            }
+            //se tem B coloca não A
+            else if (arrIncluiArr(left, elementos[1])) {
+              if (left.length > 0) left.push(",");
+              left = left.concat(["∼", ...elementos[0]]);
+            }
           }
           //∼(A↔B) => ∼A∧B && A∧∼B
           if (operacao == "↔" && TudoNegativo) {
-            if (left.length > 0) left.push(",");
-            if (right.length > 0) right.push(",");
-            left = left.concat(["∼", ...elementos[0], "∧", ...elementos[1]]);
-            right = right.concat([...elementos[0], "∧", "∼", ...elementos[1]]);
+            if (maybeLeft.length > 0 && left.length <= 0) {
+              left = maybeLeft;
+              maybeLeft = [];
+            }
+
+            //se tem A coloca não B
+            if (arrIncluiArr(left, elementos[0])) {
+              if (left.length > 0) left.push(",");
+              left = left.concat(["∼", ...elementos[1]]);
+            }
+            //se tem B coloca não A
+            else if (arrIncluiArr(left, elementos[1])) {
+              if (left.length > 0) left.push(",");
+              left = left.concat(["∼", ...elementos[0]]);
+            }
+            //se tem naoA coloca B
+            else if (arrIncluiArr(left, ["∼", ...elementos[0]])) {
+              if (left.length > 0) left.push(",");
+              left = left.concat(elementos[1]);
+            }
+            //se tem naoB coloca A
+            else if (arrIncluiArr(left, ["∼", ...elementos[1]])) {
+              if (left.length > 0) left.push(",");
+              left = left.concat(elementos[0]);
+            }
           }
           //A↔B => A∧B && ∼A∧∼B
           if (operacao == "↔" && !TudoNegativo) {
@@ -255,12 +283,12 @@ class BinarySearchTree {
               left = left.concat(elementos[0]);
             }
             //se tem ~A add ~B
-            else if (!arrIncluiArr(left, ["∼", ...elementos[0]])) {
+            else if (arrIncluiArr(left, ["∼", ...elementos[0]])) {
               if (left.length > 0) left.push(",");
               left = left.concat(["∼", ...elementos[1]]);
             }
             //se tem ~B add ~A
-            else if (!arrIncluiArr(left, ["∼", ...elementos[1]])) {
+            else if (arrIncluiArr(left, ["∼", ...elementos[1]])) {
               if (left.length > 0) left.push(",");
               left = left.concat(["∼", ...elementos[0]]);
             }
@@ -464,16 +492,11 @@ function eLiteral(a) {
 function arrIncluiArr(arr, insideArr) {
   arr = arr.join("").split(",");
   insideArr = insideArr.join("");
-  console.log("CHECANDO ARR E ARR INSIDE");
-  console.log(arr);
-  console.log(insideArr);
   //arr de arrays inclui arr
   for (let i = 0; i <= arr.length; i++) {
     if (arr[i] == insideArr) {
-      console.log("foi encontrado");
       return true;
     }
   }
-  console.log("nao foi encontrado");
   return false;
 }
