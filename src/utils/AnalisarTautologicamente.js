@@ -194,7 +194,6 @@ class BinarySearchTree {
               !arrIncluiArr(left, elementos[0]) &&
               !arrIncluiArr(left, elementos[1])
             ) {
-              console.log("KRL");
               if (left.length > 0) left.push(",");
               if (right.length > 0) right.push(",");
               left = left.concat(elementos[0]);
@@ -203,10 +202,27 @@ class BinarySearchTree {
           }
           //A→B => ∼A && B
           if (operacao == "→" && !TudoNegativo) {
-            if (left.length > 0) left.push(",");
-            if (right.length > 0) right.push(",");
-            left = left.concat(["∼", ...elementos[0]]);
-            right = right.concat(elementos[1]);
+            if (maybeLeft.length > 0 && left.length <= 0) {
+              left = maybeLeft;
+              maybeLeft = [];
+            }
+            if (
+              !arrIncluiArr(left, elementos[0]) &&
+              !arrIncluiArr(left, elementos[1])
+            ) {
+              if (left.length > 0) left.push(",");
+              if (right.length > 0) right.push(",");
+              left = left.concat(["∼", ...elementos[0]]);
+              right = right.concat(elementos[1]);
+              //se eu tenho A
+            } else if (arrIncluiArr(left, elementos[0])) {
+              //Só tenho que ter o B
+              console.log("chegou porra");
+              console.log(left);
+              if (left.length > 0) left.push(",");
+              left = left.concat(elementos[1]);
+              console.log(left);
+            }
           }
           //∼(A∧B) => ∼A && ∼B
           if (operacao == "∧" && TudoNegativo) {
