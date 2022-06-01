@@ -206,10 +206,13 @@ class BinarySearchTree {
               left = maybeLeft;
               maybeLeft = [];
             }
+            //se não tem nenhum literal e não tem ∼A
             if (
               !arrIncluiArr(left, elementos[0]) &&
-              !arrIncluiArr(left, elementos[1])
+              !arrIncluiArr(left, elementos[1]) &&
+              !arrIncluiArr(left, ["∼", ...elementos[0]])
             ) {
+              console.log("entrou aqui");
               if (left.length > 0) left.push(",");
               if (right.length > 0) right.push(",");
               left = left.concat(["∼", ...elementos[0]]);
