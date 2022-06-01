@@ -62,7 +62,13 @@ class BinarySearchTree {
         //separar pelas virgulas
         let temp = proximo.data.join("").split(",");
         for (let x = 0; x < temp.length; x++) {
-          testes.push(temp[x].split(""));
+          let curCase = temp[x].split("");
+          console.log(curCase);
+          if (eLiteral(curCase.join(""))) {
+            testes = [curCase].concat(testes);
+          } else {
+            testes.push(curCase);
+          }
         }
       } else {
         testes.push(proximo.data);
@@ -71,11 +77,22 @@ class BinarySearchTree {
       // (P∧(∼Qv∼P))v(C∧(A→C)) erro C e C
       let maybeRight = [];
       let maybeLeft = [];
+      let hasFinished = false;
 
       console.log("INICIANDO OPERAÇÃO - " + proximo.data.join(""));
       for (let t = 0; t < testes.length; t++) {
         let cur = testes[t];
         if (!eLiteral(cur.join(""))) {
+          console.log(hasFinished);
+          if (hasFinished) {
+            if (maybeLeft.length > 0) maybeLeft.push(",");
+            maybeLeft = maybeLeft.concat(cur);
+            if (maybeRight.length > 0) maybeRight.push(",");
+            maybeRight = maybeRight.concat(cur);
+            continue;
+          }
+          console.log(hasFinished);
+          hasFinished = true;
           //see tiver -- já subistitui logo
           for (let i = 0; i < cur.length; i++) {
             if (cur[i] == "∼" && cur[i + 1] == "∼") cur.splice(i, 2);
@@ -169,10 +186,20 @@ class BinarySearchTree {
           //"∧v→↔()"
           //AvB => A && B
           if (operacao == "v" && !TudoNegativo) {
-            if (left.length > 0) left.push(",");
-            if (right.length > 0) right.push(",");
-            left = left.concat(elementos[0]);
-            right = right.concat(elementos[1]);
+            if (maybeLeft.length > 0 && left.length <= 0) {
+              left = maybeLeft;
+              maybeLeft = [];
+            }
+            if (
+              !arrIncluiArr(left, elementos[0]) &&
+              !arrIncluiArr(left, elementos[1])
+            ) {
+              console.log("KRL");
+              if (left.length > 0) left.push(",");
+              if (right.length > 0) right.push(",");
+              left = left.concat(elementos[0]);
+              right = right.concat(elementos[1]);
+            }
           }
           //A→B => ∼A && B
           if (operacao == "→" && !TudoNegativo) {
@@ -402,4 +429,21 @@ function eLiteral(a) {
   if (validos.includes(a)) {
     return true;
   }
+}
+
+function arrIncluiArr(arr, insideArr) {
+  arr = arr.join("").split(",");
+  insideArr = insideArr.join("");
+  console.log("CHECANDO ARR E ARR INSIDE");
+  console.log(arr);
+  console.log(insideArr);
+  //arr de arrays inclui arr
+  for (let i = 0; i <= arr.length; i++) {
+    if (arr[i] == insideArr) {
+      console.log("foi encontrado");
+      return true;
+    }
+  }
+  console.log("nao foi encontrado");
+  return false;
 }
